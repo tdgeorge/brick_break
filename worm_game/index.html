@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worm Game</title>
+    <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🐛 Worm Game</h1>
+        
+        <div class="score-board">
+            <div class="score">
+                <span>Score: </span>
+                <span id="current-score">0</span>
+            </div>
+            <div class="high-score">
+                <span>High Score: </span>
+                <span id="high-score">0</span>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        
+        <div class="controls">
+            <button id="start-btn">Start Game</button>
+            <button id="pause-btn" disabled>Pause</button>
+            <button id="restart-btn" disabled>Restart</button>
+        </div>
+
+        <div class="instructions">
+            <h3>How to Play</h3>
+            <p>Use arrow keys to move the worm. Eat the red food to grow and increase your score. Don't hit the walls or yourself!</p>
+        </div>
+
+        <div id="game-over" class="game-over hidden">
+            <h2>Game Over!</h2>
+            <p>Your Score: <span id="final-score">0</span></p>
+            <button id="play-again-btn">Play Again</button>
+        </div>
+    </div>
+
+    <script src="src/game.js"></script>
+</body>
+</html>

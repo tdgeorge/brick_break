@@ -4,6 +4,7 @@ const GRID_SIZE = 20;
 const CELL_SIZE = CANVAS_SIZE / GRID_SIZE;
 const INITIAL_SPEED = 150;
 const SPEED_INCREMENT = 5;
+const FOOD_PER_LEVEL = 10;
 
 // Game state
 let canvas, ctx;
@@ -13,6 +14,8 @@ let isGameOver = false;
 let score = 0;
 let highScore = 0;
 let speed = INITIAL_SPEED;
+let level = 1;
+let foodInLevel = 0;
 
 // Worm state
 let worm = [];
@@ -22,12 +25,50 @@ let nextDirection = { x: 1, y: 0 };
 // Food state
 let food = { x: 0, y: 0 };
 
+// Walls state
+let walls = [];
+
+// Predefined wall layouts for each level
+const LEVEL_WALLS = {
+    1: [], // No walls
+    2: [{ x: 10, y: 5 }, { x: 10, y: 6 }, { x: 10, y: 7 }], // Horizontal wall in upper middle
+    3: [
+        { x: 10, y: 5 }, { x: 10, y: 6 }, { x: 10, y: 7 },
+        { x: 5, y: 14 }, { x: 6, y: 14 }, { x: 7, y: 14 }
+    ], // Two horizontal walls
+    4: [
+        { x: 10, y: 5 }, { x: 10, y: 6 }, { x: 10, y: 7 },
+        { x: 5, y: 14 }, { x: 6, y: 14 }, { x: 7, y: 14 },
+        { x: 15, y: 10 }, { x: 15, y: 11 }, { x: 15, y: 12 }
+    ], // Three walls forming triangle
+    5: [
+        { x: 10, y: 5 }, { x: 10, y: 6 }, { x: 10, y: 7 },
+        { x: 5, y: 14 }, { x: 6, y: 14 }, { x: 7, y: 14 },
+        { x: 15, y: 10 }, { x: 15, y: 11 }, { x: 15, y: 12 },
+        { x: 5, y: 5 }, { x: 6, y: 5 }
+    ], // Four walls in corners
+    6: [
+        { x: 10, y: 5 }, { x: 10, y: 6 }, { x: 10, y: 7 }, { x: 10, y: 8 },
+        { x: 5, y: 14 }, { x: 6, y: 14 }, { x: 7, y: 14 }, { x: 8, y: 14 },
+        { x: 15, y: 10 }, { x: 15, y: 11 }, { x: 15, y: 12 }, { x: 15, y: 13 },
+        { x: 5, y: 5 }, { x: 6, y: 5 }, { x: 7, y: 5 }
+    ], // Longer walls
+    7: [
+        { x: 10, y: 5 }, { x: 10, y: 6 }, { x: 10, y: 7 }, { x: 10, y: 8 },
+        { x: 5, y: 14 }, { x: 6, y: 14 }, { x: 7, y: 14 }, { x: 8, y: 14 },
+        { x: 15, y: 10 }, { x: 15, y: 11 }, { x: 15, y: 12 }, { x: 15, y: 13 },
+        { x: 5, y: 5 }, { x: 6, y: 5 }, { x: 7, y: 5 },
+        { x: 3, y: 10 }, { x: 4, y: 10 }
+    ]
+};
+
 // DOM elements
 const startBtn = document.getElementById('start-btn');
 const pauseBtn = document.getElementById('pause-btn');
 const restartBtn = document.getElementById('restart-btn');
 const currentScoreEl = document.getElementById('current-score');
 const highScoreEl = document.getElementById('high-score');
+const currentLevelEl = document.getElementById('current-level');
 const gameOverEl = document.getElementById('game-over');
 const finalScoreEl = document.getElementById('final-score');
 const playAgainBtn = document.getElementById('play-again-btn');
@@ -76,11 +117,20 @@ function resetGame() {
     direction = { x: 1, y: 0 };
     nextDirection = { x: 1, y: 0 };
     score = 0;
+    level = 1;
+    foodInLevel = 0;
     speed = INITIAL_SPEED;
     isPaused = false;
     isGameOver = false;
     currentScoreEl.textContent = score;
+    currentLevelEl.textContent = level;
+    loadLevel(level);
     spawnFood();
+}
+
+// Load walls for a specific level
+function loadLevel(levelNum) {
+    walls = LEVEL_WALLS[levelNum] || LEVEL_WALLS[7]; // Use level 7 walls for levels beyond 7
 }
 
 // Restart game
@@ -131,6 +181,11 @@ function handleKeyPress(e) {
     }
 }
 
+// Check if position collides with wall
+function isWall(x, y) {
+    return walls.some(wall => wall.x === x && wall.y === y);
+}
+
 // Main game update
 function update() {
     if (isPaused || isGameOver) return;
@@ -149,6 +204,12 @@ function update() {
         return;
     }
     
+    // Check obstacle wall collision
+    if (isWall(head.x, head.y)) {
+        endGame();
+        return;
+    }
+    
     // Check self collision
     if (worm.some(segment => segment.x === head.x && segment.y === head.y)) {
         endGame();
@@ -161,7 +222,17 @@ function update() {
     // Check food collision
     if (head.x === food.x && head.y === food.y) {
         score++;
+        foodInLevel++;
         currentScoreEl.textContent = score;
+        
+        // Check for level up
+        if (foodInLevel >= FOOD_PER_LEVEL) {
+            level++;
+            foodInLevel = 0;
+            currentLevelEl.textContent = level;
+            loadLevel(level);
+        }
+        
         spawnFood();
         
         // Increase speed slightly
@@ -184,7 +255,10 @@ function spawnFood() {
     do {
         food.x = Math.floor(Math.random() * GRID_SIZE);
         food.y = Math.floor(Math.random() * GRID_SIZE);
-    } while (worm.some(segment => segment.x === food.x && segment.y === food.y));
+    } while (
+        worm.some(segment => segment.x === food.x && segment.y === food.y) ||
+        isWall(food.x, food.y)
+    );
 }
 
 // Draw everything
@@ -195,6 +269,20 @@ function draw() {
     
     // Draw grid
     drawGrid();
+    
+    // Draw walls
+    ctx.fillStyle = '#34495e';
+    ctx.shadowBlur = 5;
+    ctx.shadowColor = '#2c3e50';
+    walls.forEach(wall => {
+        ctx.fillRect(
+            wall.x * CELL_SIZE + 1,
+            wall.y * CELL_SIZE + 1,
+            CELL_SIZE - 2,
+            CELL_SIZE - 2
+        );
+    });
+    ctx.shadowBlur = 0;
     
     // Draw food
     ctx.fillStyle = '#e74c3c';

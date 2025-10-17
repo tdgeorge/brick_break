@@ -5,6 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Worm Game</title>
     <link rel="stylesheet" href="src/style.css">
+    <style>
+        /* Debug console styles */
+        #debug-console {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        #debug-console h4 {
+            margin: 0 0 10px 0;
+            color: #00ff00;
+            font-size: 14px;
+        }
+        .debug-log {
+            color: #00ff00;
+            margin: 2px 0;
+            padding: 2px 0;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        .debug-error {
+            color: #ff4444;
+        }
+        .debug-warn {
+            color: #ffaa00;
+        }
+        .debug-info {
+            color: #00aaff;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -43,8 +77,41 @@
             <p>Your Score: <span id="final-score">0</span></p>
             <button id="play-again-btn">Play Again</button>
         </div>
+
+        <!-- Debug Console -->
+        <div id="debug-console">
+            <h4>🐛 Debug Console</h4>
+            <div id="debug-output"></div>
+        </div>
     </div>
 
+    <script>
+        // Debug logging function
+        const debugOutput = document.getElementById('debug-output');
+        function debugLog(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `debug-${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            debugOutput.appendChild(logEntry);
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+            console.log(message);
+        }
+
+        // Override console methods to capture errors
+        window.addEventListener('error', (e) => {
+            debugLog(`ERROR: ${e.message} at ${e.filename}:${e.lineno}`, 'error');
+        });
+
+        debugLog('Page loaded', 'info');
+    </script>
     <script src="src/game.js"></script>
+    <script>
+        // Log initialization status
+        debugLog('game.js loaded', 'info');
+        debugLog(`Canvas element: ${document.getElementById('gameCanvas') ? 'Found' : 'NOT FOUND'}`, 'info');
+        debugLog(`Start button: ${document.getElementById('start-btn') ? 'Found' : 'NOT FOUND'}`, 'info');
+        debugLog(`Init function: ${typeof init !== 'undefined' ? 'Defined' : 'NOT DEFINED'}`, 'info');
+    </script>
 </body>
 </html>

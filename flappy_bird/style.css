@@ -1,0 +1,23 @@
+.body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #87CEEB; /* Sky blue */
+}
+
+canvas {
+    background-color: #ffffff; /* White background for the canvas */
+    border: 2px solid #000000; /* Black border around the canvas */
+}
+
+game-over {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    color: #ff0000; /* Red color for the game over text */
+    text-align: center;
+}
